@@ -2,21 +2,44 @@ require 'rest-client'
 require 'json'
 
 class  CsaRestClient
-    $login = "admin"
-    $password = "taliesin"
-    $api_url = 'http://localhost:3000/api/broadcasts.json'
+    def run
+        initialise
+        menu_loop
+    end  
 
-    def print_menu
+    private
+
+    def initialise
+        @remotes = ['http://localhost:3000/api/broadcasts.json', 'https://csa-heroku-pab37.herokuapp.com/api/broadcasts.json']
+        @api_url = @remotes[1] # default
+
+        @login = "admin"
+        @password = "taliesin"
+    end
+
+    def menu_loop
         while true do
-            puts "1. Login\n2. List existing broadcasts\n3. Create a new broadcast\nQ. Quit"
+            puts "\n\t\tCSA Rest Client"
+            puts
+            puts "Remote: #{@api_url}"
+            puts
+            puts "1. Login\n" +
+                 "2. List existing broadcasts\n" +
+                 "3. Create a new broadcast\n" +
+                 "4. Change remote\n" +
+                 "Q. Quit"
             
-            case gets.chomp
+            answ = gets.chomp
+            puts
+            case answ
             when "1"
                 login
             when "2"
                 list_broadcasts
             when "3"
                 create_broadcast
+            when "4"
+                change_remote
             when "q", "Q"
                 break
             else
@@ -25,18 +48,28 @@ class  CsaRestClient
         end
     end
 
-    private
-
     def login
         puts
     end
 
+    def change_remote
+        @remotes.each_with_index do |remote, index|
+            puts "#{index}. #{remote}"
+        end
+
+        answ = gets.chomp
+        if @remotes.index(answ)
+            @api_url = @remotes[answ]
+        else
+            puts "\nWrong number, try again."
+        end
+    end
+
     def list_broadcasts
         begin
-            #response = RestClient.get $api_url, user: 'admin', password: 'taliesin'
-            response = RestClient::Request.execute method: :get, url: $api_url,
-                            user: $login, password: $password
-            puts "\nResponse code: #{response.code}\n\n"
+            response = RestClient::Request.execute method: :get, url: @api_url,
+                            user: @login, password: @password
+            #puts "\nResponse code: #{response.code}\n\n"
             
             broadcasts = JSON.parse(response)
             broadcasts.each do |broadcast|
@@ -89,15 +122,9 @@ class  CsaRestClient
             puts exception
         end
     end
-
-end
-
-class Broadcast
-    
 end
 
 csa_rest_client = CsaRestClient.new
-
-csa_rest_client.print_menu
+csa_rest_client.run
 
     
