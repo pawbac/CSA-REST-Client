@@ -237,5 +237,3 @@ end
 
 csa_rest_client = CsaRestClient.new
 csa_rest_client.run
-
-    
